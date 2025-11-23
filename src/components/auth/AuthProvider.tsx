@@ -14,7 +14,6 @@ function ThemeProvider({ children }: { children: ReactNode }) {
   return (
     <ClerkProvider
       appearance={{
-        baseTheme: theme === 'dark' ? dark : undefined,
         elements: {
           formButtonPrimary: 'bg-purple-600 hover:bg-purple-700 text-sm normal-case',
           formFieldInput: 'rounded-lg border-gray-200',
