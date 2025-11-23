@@ -1,7 +1,6 @@
 'use client';
 
 import { ClerkProvider, useAuth } from '@clerk/nextjs';
-import { dark } from '@clerk/themes';
 import { useTheme } from 'next-themes';
 import { ReactNode } from 'react';
 
