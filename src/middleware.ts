@@ -1,25 +1,8 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
+import { auth, currentUser } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 
-// Define public and protected routes
-const isPublicRoute = createRouteMatcher([
-  '/',
-  '/sign-in(.*)',
-  '/sign-up(.*)',
-  '/api/webhooks(.*)',
-  '/rooms(.*)', // Allow public room browsing
-]);
-
-const isProtectedRoute = createRouteMatcher([
-  '/dashboard',
-  '/profile',
-  '/friends',
-  '/rooms/create',
-  '/settings',
-]);
-
-export default clerkMiddleware((auth, req) => {
-  const { userId } = auth();
+export default auth(async (req) => {
+  const { userId } = await auth();
   const currentPath = req.nextUrl.pathname;
 
   // Redirect authenticated users away from auth pages
@@ -27,16 +10,29 @@ export default clerkMiddleware((auth, req) => {
     return NextResponse.redirect(new URL('/dashboard', req.url));
   }
 
+  // Define protected routes
+  const protectedRoutes = [
+    '/dashboard',
+    '/profile',
+    '/friends',
+    '/rooms/create',
+    '/settings',
+  ];
+
+  const isProtectedRoute = protectedRoutes.some(route =>
+    currentPath.startsWith(route)
+  );
+
   // Protect routes
-  if (isProtectedRoute(req) && !userId) {
+  if (isProtectedRoute && !userId) {
     return NextResponse.redirect(new URL('/sign-in', req.url));
   }
 
   // Handle room access - allow guests for public rooms
   if (currentPath.startsWith('/rooms/') && !userId) {
+    // For now, allow room browsing without authentication
     // You could add logic here to check if it's a public room
-    // For now, redirect to sign-in
-    return NextResponse.redirect(new URL('/sign-in', req.url));
+    return NextResponse.next();
   }
 
   return NextResponse.next();
